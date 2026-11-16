@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter debug VM service binds to localhost; this permission is not included in release. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
