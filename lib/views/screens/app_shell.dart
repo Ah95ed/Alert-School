@@ -66,7 +66,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     ];
     return Scaffold(
       appBar: AppBar(title: Text(titles[_selectedIndex]), centerTitle: true),
-      body: IndexedStack(index: _selectedIndex, children: pages),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: IndexedStack(index: _selectedIndex, children: pages),
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) =>

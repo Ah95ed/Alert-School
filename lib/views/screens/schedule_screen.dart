@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/schedule_controller.dart';
@@ -20,7 +21,7 @@ class ScheduleScreen extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
           child: Row(
             children: [
               Expanded(
@@ -31,10 +32,12 @@ class ScheduleScreen extends StatelessWidget {
                     prefixIcon: const Icon(Icons.calendar_month),
                   ),
                   items: controller.schedules
-                      .map((item) => DropdownMenuItem(
-                            value: item.id,
-                            child: Text(item.name),
-                          ))
+                      .map(
+                        (item) => DropdownMenuItem(
+                          value: item.id,
+                          child: Text(item.name),
+                        ),
+                      )
                       .toList(),
                   onChanged: (id) {
                     if (id != null) {
@@ -75,16 +78,18 @@ class ScheduleScreen extends StatelessWidget {
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(context.tr('days'),
-                style: Theme.of(context).textTheme.titleSmall),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+            child: Text(
+              context.tr('days'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           child: Wrap(
-            spacing: 4,
-            runSpacing: 0,
+            spacing: 4.w,
+            runSpacing: 0.h,
             children: List.generate(7, (index) {
               final weekday = index == 0 ? 7 : index;
               return FilterChip(
@@ -103,10 +108,10 @@ class ScheduleScreen extends StatelessWidget {
             }),
           ),
         ),
-        const Divider(height: 12),
+        Divider(height: 12.h),
         Expanded(
           child: ReorderableListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
             itemCount: schedule.lessons.length,
             onReorderItem: (oldIndex, newIndex) => runUiAction(
               context,
@@ -117,7 +122,7 @@ class ScheduleScreen extends StatelessWidget {
               final start = previews[lesson.id];
               return Card(
                 key: ValueKey(lesson.id),
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: EdgeInsets.only(bottom: 8.h),
                 child: ListTile(
                   onTap: () => _editLesson(context, lesson),
                   leading: Switch(
@@ -148,7 +153,7 @@ class ScheduleScreen extends StatelessWidget {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 12.h),
             child: SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
@@ -200,23 +205,23 @@ class _ScheduleNameDialogState extends State<_ScheduleNameDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text(context.tr('addSchedule')),
-        content: TextField(
-          controller: _controller,
-          autofocus: true,
-          decoration: InputDecoration(labelText: context.tr('scheduleName')),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, _controller.text),
-            child: Text(context.tr('save')),
-          ),
-        ],
-      );
+    title: Text(context.tr('addSchedule')),
+    content: TextField(
+      controller: _controller,
+      autofocus: true,
+      decoration: InputDecoration(labelText: context.tr('scheduleName')),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text(context.tr('cancel')),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(context, _controller.text),
+        child: Text(context.tr('save')),
+      ),
+    ],
+  );
 }
 
 class _LessonEditor extends StatefulWidget {
@@ -231,8 +236,9 @@ class _LessonEditor extends StatefulWidget {
 class _LessonEditorState extends State<_LessonEditor> {
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.lesson.name);
-  late final _duration =
-      TextEditingController(text: '${widget.lesson.durationMinutes}');
+  late final _duration = TextEditingController(
+    text: '${widget.lesson.durationMinutes}',
+  );
   late final _break = TextEditingController(
     text: '${widget.lesson.breakAfterMinutes}',
   );
@@ -256,10 +262,10 @@ class _LessonEditorState extends State<_LessonEditor> {
     final settings = context.watch<SettingsController>().settings;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        MediaQuery.viewInsetsOf(context).bottom + 16,
+        20.w,
+        16.h,
+        20.w,
+        MediaQuery.viewInsetsOf(context).bottom + 16.h,
       ),
       child: Form(
         key: _formKey,
@@ -269,20 +275,24 @@ class _LessonEditorState extends State<_LessonEditor> {
             children: [
               TextFormField(
                 controller: _name,
-                decoration: InputDecoration(labelText: context.tr('lessonName')),
+                decoration: InputDecoration(
+                  labelText: context.tr('lessonName'),
+                ),
                 validator: (value) =>
                     value == null || value.trim().isEmpty ? '!' : null,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(context.tr('startTime')),
-                subtitle: Text(formatMinuteOfDay(
-                  _startMinute,
-                  use24Hour: settings.use24HourTime,
-                  amLabel: context.tr('am'),
-                  pmLabel: context.tr('pm'),
-                )),
+                subtitle: Text(
+                  formatMinuteOfDay(
+                    _startMinute,
+                    use24Hour: settings.use24HourTime,
+                    amLabel: context.tr('am'),
+                    pmLabel: context.tr('pm'),
+                  ),
+                ),
                 trailing: const Icon(Icons.access_time),
                 onTap: _chooseTime,
               ),
@@ -303,14 +313,14 @@ class _LessonEditorState extends State<_LessonEditor> {
                   if (mode != null) setState(() => _mode = mode);
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: _duration,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: context.tr('duration')),
                 validator: _validateDuration,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: _break,
                 keyboardType: TextInputType.number,
@@ -348,7 +358,7 @@ class _LessonEditorState extends State<_LessonEditor> {
                     onPressed: () => Navigator.pop(context),
                     child: Text(context.tr('cancel')),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   FilledButton(
                     onPressed: _saving ? null : _save,
                     child: Text(context.tr('save')),
@@ -390,23 +400,23 @@ class _LessonEditorState extends State<_LessonEditor> {
     setState(() => _saving = true);
     final controller = context.read<ScheduleController>();
     try {
-      await controller.updateLesson(widget.lesson.copyWith(
-        name: _name.text.trim(),
-        startMinute: _startMinute,
-        durationMinutes: int.parse(_duration.text),
-        breakAfterMinutes: int.parse(_break.text),
-        startMode: _mode,
-        enabled: _enabled,
-        bellOnStart: _bellOnStart,
-        bellOnEnd: _bellOnEnd,
-      ));
+      await controller.updateLesson(
+        widget.lesson.copyWith(
+          name: _name.text.trim(),
+          startMinute: _startMinute,
+          durationMinutes: int.parse(_duration.text),
+          breakAfterMinutes: int.parse(_break.text),
+          startMode: _mode,
+          enabled: _enabled,
+          bellOnStart: _bellOnStart,
+          bellOnEnd: _bellOnEnd,
+        ),
+      );
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${context.tr('operationFailed')}: $error'),
-        ),
+        SnackBar(content: Text('${context.tr('operationFailed')}: $error')),
       );
       setState(() => _saving = false);
     }
@@ -420,9 +430,7 @@ class _LessonEditorState extends State<_LessonEditor> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${context.tr('operationFailed')}: $error'),
-        ),
+        SnackBar(content: Text('${context.tr('operationFailed')}: $error')),
       );
     }
   }

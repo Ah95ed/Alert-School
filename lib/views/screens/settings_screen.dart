@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/settings_controller.dart';
@@ -13,31 +14,25 @@ class SettingsScreen extends StatelessWidget {
     final controller = context.watch<SettingsController>();
     final settings = controller.settings;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       children: [
-        Text(context.tr('language'),
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        Text(
+          context.tr('language'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        SizedBox(height: 8.h),
         SegmentedButton<String>(
           segments: [
-            ButtonSegment(
-              value: 'ar',
-              label: Text(context.tr('arabic')),
-            ),
-            ButtonSegment(
-              value: 'en',
-              label: Text(context.tr('english')),
-            ),
+            ButtonSegment(value: 'ar', label: Text(context.tr('arabic'))),
+            ButtonSegment(value: 'en', label: Text(context.tr('english'))),
           ],
           selected: {settings.localeCode},
           onSelectionChanged: (value) => runUiAction(
             context,
-            () => controller.update(
-              settings.copyWith(localeCode: value.first),
-            ),
+            () => controller.update(settings.copyWith(localeCode: value.first)),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
         DropdownButtonFormField<String>(
           initialValue: settings.themeMode,
           decoration: InputDecoration(
@@ -46,7 +41,9 @@ class SettingsScreen extends StatelessWidget {
           ),
           items: [
             DropdownMenuItem(
-                value: 'system', child: Text(context.tr('system'))),
+              value: 'system',
+              child: Text(context.tr('system')),
+            ),
             DropdownMenuItem(value: 'light', child: Text(context.tr('light'))),
             DropdownMenuItem(value: 'dark', child: Text(context.tr('dark'))),
           ],
@@ -62,8 +59,11 @@ class SettingsScreen extends StatelessWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(context.tr('clock')),
-          subtitle:
-              Text(settings.use24HourTime ? context.tr('clock24') : context.tr('clock12')),
+          subtitle: Text(
+            settings.use24HourTime
+                ? context.tr('clock24')
+                : context.tr('clock12'),
+          ),
           value: settings.use24HourTime,
           onChanged: (value) => runUiAction(
             context,
@@ -95,10 +95,12 @@ class SettingsScreen extends StatelessWidget {
             }
           },
         ),
-        const SizedBox(height: 20),
-        Text(context.tr('sound'),
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        SizedBox(height: 20.h),
+        Text(
+          context.tr('sound'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        SizedBox(height: 8.h),
         DropdownButtonFormField<String>(
           initialValue: _selectedBuiltIn(settings.soundUri),
           decoration: InputDecoration(
@@ -107,13 +109,17 @@ class SettingsScreen extends StatelessWidget {
           ),
           items: [
             DropdownMenuItem(
-                value: 'builtin:alarm', child: Text(context.tr('soundAlarm'))),
+              value: 'builtin:alarm',
+              child: Text(context.tr('soundAlarm')),
+            ),
             DropdownMenuItem(
-                value: 'builtin:notification',
-                child: Text(context.tr('soundNotification'))),
+              value: 'builtin:notification',
+              child: Text(context.tr('soundNotification')),
+            ),
             DropdownMenuItem(
-                value: 'builtin:ringtone',
-                child: Text(context.tr('soundRingtone'))),
+              value: 'builtin:ringtone',
+              child: Text(context.tr('soundRingtone')),
+            ),
             DropdownMenuItem(
               value: 'custom',
               child: Text(context.tr('customSoundSelected')),
@@ -140,9 +146,8 @@ class SettingsScreen extends StatelessWidget {
           title: Text(context.tr('volume')),
           subtitle: _VolumeSlider(
             value: settings.alarmVolume,
-            onChangeEnd: (value) => controller.update(
-              settings.copyWith(alarmVolume: value),
-            ),
+            onChangeEnd: (value) =>
+                controller.update(settings.copyWith(alarmVolume: value)),
           ),
         ),
         SwitchListTile(
@@ -151,18 +156,16 @@ class SettingsScreen extends StatelessWidget {
           value: settings.vibrationEnabled,
           onChanged: (value) => runUiAction(
             context,
-            () => controller.update(
-              settings.copyWith(vibrationEnabled: value),
-            ),
+            () => controller.update(settings.copyWith(vibrationEnabled: value)),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         FilledButton.icon(
           onPressed: () => runUiAction(context, controller.testBell),
           icon: const Icon(Icons.play_arrow),
           label: Text(context.tr('testBell')),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         OutlinedButton.icon(
           onPressed: () => runUiAction(context, controller.testBellInOneMinute),
           icon: const Icon(Icons.timer_outlined),
@@ -172,9 +175,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  String _selectedBuiltIn(String uri) => uri.startsWith('builtin:')
-      ? uri
-      : 'custom';
+  String _selectedBuiltIn(String uri) =>
+      uri.startsWith('builtin:') ? uri : 'custom';
 }
 
 class _VolumeSlider extends StatefulWidget {
@@ -198,13 +200,11 @@ class _VolumeSliderState extends State<_VolumeSlider> {
 
   @override
   Widget build(BuildContext context) => Slider(
-        value: _value.clamp(0, 1),
-        divisions: 10,
-        label: '${(_value * 100).round()}%',
-        onChanged: (value) => setState(() => _value = value),
-        onChangeEnd: (value) => runUiAction(
-          context,
-          () => widget.onChangeEnd(value),
-        ),
-      );
+    value: _value.clamp(0, 1),
+    divisions: 10,
+    label: '${(_value * 100).round()}%',
+    onChanged: (value) => setState(() => _value = value),
+    onChangeEnd: (value) =>
+        runUiAction(context, () => widget.onChangeEnd(value)),
+  );
 }

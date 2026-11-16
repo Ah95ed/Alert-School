@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-
 import 'app.dart';
 import 'controllers/schedule_controller.dart';
 import 'controllers/settings_controller.dart';

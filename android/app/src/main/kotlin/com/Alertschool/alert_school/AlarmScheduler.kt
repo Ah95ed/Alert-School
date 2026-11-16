@@ -32,8 +32,9 @@ internal object AlarmScheduler {
             return
         }
         val now = System.currentTimeMillis()
-        val next = (0 until AlarmStore.plan(context).length())
-            .mapNotNull { AlarmStore.plan(context).optJSONObject(it) }
+        val bells = AlarmStore.plan(context)
+        val next = (0 until bells.length())
+            .mapNotNull { bells.optJSONObject(it) }
             .filter { it.optLong("timestampMillis") > now }
             .minByOrNull { it.optLong("timestampMillis") }
             ?: return

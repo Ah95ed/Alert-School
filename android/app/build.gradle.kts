@@ -1,13 +1,10 @@
 import java.util.Properties
 
-import java.io.FileInputStream
-
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-
 val releaseKeyPropertiesFile = rootProject.file("D:/Android_Keys/key.properties")
 val releaseKeyProperties = Properties().apply {
     if (releaseKeyPropertiesFile.exists()) {
@@ -29,10 +26,6 @@ android {
         applicationId = "com.Alertschool.alert_school"
         minSdk = 24
         targetSdk = 35
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -48,6 +41,9 @@ android {
 
     buildTypes {
         release {
+            // WorkManager creates its Room database implementation reflectively.
+            isMinifyEnabled = false
+            isShrinkResources = false
             if (releaseKeyPropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }

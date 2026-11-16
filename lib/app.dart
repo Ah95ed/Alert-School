@@ -3,6 +3,7 @@ import 'package:cupertino_ui/cupertino_ui.dart'
     show GlobalCupertinoLocalizations;
 import 'package:flutter_localizations/flutter_localizations.dart'
     show GlobalWidgetsLocalizations;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import 'controllers/permissions_controller.dart';
@@ -28,46 +29,50 @@ class AlertSchoolApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MultiProvider(
-        // Provider is the dependency-injection boundary for MVC controllers.
-        providers: [
-          ChangeNotifierProvider.value(value: scheduleController),
-          ChangeNotifierProvider.value(value: settingsController),
-          ChangeNotifierProvider(
-            create: (_) => PermissionsController(alarmService: alarmService),
+    // Provider is the dependency-injection boundary for MVC controllers.
+    providers: [
+      ChangeNotifierProvider.value(value: scheduleController),
+      ChangeNotifierProvider.value(value: settingsController),
+      ChangeNotifierProvider(
+        create: (_) => PermissionsController(alarmService: alarmService),
+      ),
+    ],
+    child: Consumer<SettingsController>(
+      builder: (context, controller, _) {
+        final settings = controller.settings;
+        final themeMode = switch (settings.themeMode) {
+          'light' => ThemeMode.light,
+          'dark' => ThemeMode.dark,
+          _ => ThemeMode.system,
+        };
+        final locale = Locale(settings.localeCode);
+        return ScreenUtilInit(
+          designSize: const Size(390, 844),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            title: AppConstants.appTitle,
+            debugShowCheckedModeBanner: false,
+            locale: locale,
+            supportedLocales: const [Locale('ar'), Locale('en')],
+            localizationsDelegates: const [
+              AppLocalizationsDelegate(),
+              GlobalCupertinoLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: themeMode,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(alwaysUse24HourFormat: settings.use24HourTime),
+              child: child!,
+            ),
+            home: const AppShell(),
           ),
-        ],
-        child: Consumer<SettingsController>(
-          builder: (context, controller, _) {
-            final settings = controller.settings;
-            final themeMode = switch (settings.themeMode) {
-              'light' => ThemeMode.light,
-              'dark' => ThemeMode.dark,
-              _ => ThemeMode.system,
-            };
-            final locale = Locale(settings.localeCode);
-            return MaterialApp(
-              title: AppConstants.appTitle,
-              debugShowCheckedModeBanner: false,
-              locale: locale,
-              supportedLocales: const [Locale('ar'), Locale('en')],
-              localizationsDelegates: const [
-                AppLocalizationsDelegate(),
-                GlobalCupertinoLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-              theme: AppTheme.light(),
-              darkTheme: AppTheme.dark(),
-              themeMode: themeMode,
-              builder: (context, child) => MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  alwaysUse24HourFormat: settings.use24HourTime,
-                ),
-                child: child!,
-              ),
-              home: const AppShell(),
-            );
-          },
-        ),
-      );
+        );
+      },
+    ),
+  );
 }
