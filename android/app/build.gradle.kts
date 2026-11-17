@@ -5,12 +5,12 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-val releaseKeyPropertiesFile = rootProject.file("key.properties")
-val releaseKeyProperties = Properties().apply {
-    if (releaseKeyPropertiesFile.exists()) {
-        releaseKeyPropertiesFile.inputStream().use { load(it) }
-    }
-}
+// val releaseKeyPropertiesFile = rootProject.file("D:/Android_Keys/key.properties")
+// val releaseKeyProperties = Properties().apply {
+//     if (releaseKeyPropertiesFile.exists()) {
+//         releaseKeyPropertiesFile.inputStream().use { load(it) }
+//     }
+// }
 
 android {
     namespace = "com.Alertschool.alert_school"
@@ -30,25 +30,32 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = releaseKeyProperties.getProperty("storeFile")?.let { rootProject.file(it) }
-            storePassword = releaseKeyProperties.getProperty("storePassword")
-            keyAlias = releaseKeyProperties.getProperty("keyAlias")
-            keyPassword = releaseKeyProperties.getProperty("keyPassword")
+    // signingConfigs {
+    //     create("release") {
+    //         storeFile = releaseKeyProperties.getProperty("storeFile")?.let { rootProject.file(it) }
+    //         storePassword = releaseKeyProperties.getProperty("storePassword")
+    //         keyAlias = releaseKeyProperties.getProperty("keyAlias")
+    //         keyPassword = releaseKeyProperties.getProperty("keyPassword")
+    //     }
+    // }
+     buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
-    buildTypes {
-        release {
-            // WorkManager creates its Room database implementation reflectively.
-            isMinifyEnabled = false
-            isShrinkResources = false
-            if (releaseKeyPropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            }
-        }
-    }
+    // buildTypes {
+    //     release {
+    //         // WorkManager creates its Room database implementation reflectively.
+    //         isMinifyEnabled = false
+    //         isShrinkResources = false
+    //         if (releaseKeyPropertiesFile.exists()) {
+    //             signingConfig = signingConfigs.getByName("release")
+    //         }
+    //     }
+    // }
 }
 
 dependencies {
