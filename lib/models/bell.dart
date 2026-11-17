@@ -1,4 +1,4 @@
-enum BellType { start, end, reminder }
+enum BellType { start, end }
 
 class Bell {
   const Bell({

@@ -23,10 +23,4 @@ class PermissionsController extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> confirmAutostartConfigured() async {
-    await _alarmService.confirmAutostartConfigured();
-    await refresh();
-  }
-
-  Future<void> scheduleTestBell() => _alarmService.scheduleTestBell();
 }

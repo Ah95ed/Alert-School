@@ -18,7 +18,6 @@ internal object AlarmPlanner {
         }
         val bells = JSONArray()
         val now = System.currentTimeMillis()
-        val reminderMinutes = settings.optInt("reminderMinutes", 0)
         val pausedDate = settings.optString("pausedDate", "")
         val lessons = schedule.optJSONArray("lessons") ?: JSONArray()
         val activeWeekdays = schedule.optJSONArray("activeWeekdays") ?: JSONArray()
@@ -57,12 +56,6 @@ internal object AlarmPlanner {
                     }
                 }
 
-                if (reminderMinutes > 0) {
-                    val reminder = (start.clone() as Calendar).apply {
-                        add(Calendar.MINUTE, -reminderMinutes)
-                    }
-                    addBell(bells, reminder.timeInMillis, "reminder", lesson, now)
-                }
                 if (lesson.optBoolean("bellOnStart", true)) {
                     addBell(bells, start.timeInMillis, "start", lesson, now)
                 }

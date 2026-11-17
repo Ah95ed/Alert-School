@@ -40,11 +40,6 @@ class AlertSchoolApp extends StatelessWidget {
     child: Consumer<SettingsController>(
       builder: (context, controller, _) {
         final settings = controller.settings;
-        final themeMode = switch (settings.themeMode) {
-          'light' => ThemeMode.light,
-          'dark' => ThemeMode.dark,
-          _ => ThemeMode.system,
-        };
         final locale = Locale(settings.localeCode);
         return ScreenUtilInit(
           designSize: const Size(390, 844),
@@ -62,8 +57,7 @@ class AlertSchoolApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
             ],
             theme: AppTheme.light(),
-            darkTheme: AppTheme.dark(),
-            themeMode: themeMode,
+            themeMode: ThemeMode.light,
             builder: (context, child) => MediaQuery(
               data: MediaQuery.of(context)
                   .copyWith(alwaysUse24HourFormat: settings.use24HourTime),

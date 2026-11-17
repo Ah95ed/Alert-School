@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import '../models/app_settings.dart';
@@ -27,7 +25,7 @@ class ScheduleController extends ChangeNotifier {
   AppSettings _settings = const AppSettings();
   List<Bell> _bells = const [];
   bool _isReady = false;
-  bool _isFirstRun = false;
+  bool _isBellRinging = false;
 
   List<Schedule> get schedules => _schedules;
   Schedule get activeSchedule => _schedules.firstWhere(
@@ -36,7 +34,7 @@ class ScheduleController extends ChangeNotifier {
   );
   List<Bell> get bells => _bells;
   bool get isReady => _isReady;
-  bool get isFirstRun => _isFirstRun;
+  bool get isBellRinging => _isBellRinging;
   AppSettings get settings => _settings;
   List<Bell> get todayBells {
     final now = DateTime.now();
@@ -86,14 +84,33 @@ class ScheduleController extends ChangeNotifier {
   Future<void> initialize() async {
     _schedules = await _repository.loadSchedules();
     _settings = await _repository.loadSettings();
-    _isFirstRun = await _repository.claimFirstReadinessScreen();
     final savedScheduleId = await _repository.loadActiveScheduleId();
     _activeScheduleId =
         _schedules.any((schedule) => schedule.id == savedScheduleId)
         ? savedScheduleId!
         : _schedules.first.id;
+    _schedules = [activeSchedule];
+    await _repository.saveSchedules(_schedules);
+    await _repository.saveActiveScheduleId(_activeScheduleId);
+    await _repository.saveSettings(_settings);
     await rebuildPlan();
     _isReady = true;
+    notifyListeners();
+  }
+
+  Future<void> refreshBellState() async {
+    final ringing = await _alarmService.isBellRinging();
+    if (_isBellRinging == ringing) return;
+    _isBellRinging = ringing;
+    notifyListeners();
+  }
+
+  Future<bool> claimStartupPermissionSequence() =>
+      _repository.claimStartupPermissionSequence();
+
+  Future<void> stopBell() async {
+    await _alarmService.stopBell();
+    _isBellRinging = false;
     notifyListeners();
   }
 
@@ -122,7 +139,11 @@ class ScheduleController extends ChangeNotifier {
 
   Future<void> updateLesson(Lesson lesson) async {
     if (!activeSchedule.lessons.any((current) => current.id == lesson.id)) {
-      throw ArgumentError.value(lesson.id, 'lesson.id', 'Lesson does not exist');
+      throw ArgumentError.value(
+        lesson.id,
+        'lesson.id',
+        'Lesson does not exist',
+      );
     }
     final schedule = activeSchedule.copyWith(
       lessons: activeSchedule.lessons
@@ -144,8 +165,8 @@ class ScheduleController extends ChangeNotifier {
       startMinute: last == null
           ? 8 * 60 + 30
           : last.startMinute + last.durationMinutes + last.breakAfterMinutes,
-      durationMinutes: 40,
-      breakAfterMinutes: 5,
+      durationMinutes: last?.durationMinutes ?? 40,
+      breakAfterMinutes: last?.breakAfterMinutes ?? 5,
       startMode: last == null ? StartMode.manual : StartMode.auto,
     );
     _replaceSchedule(
@@ -181,63 +202,10 @@ class ScheduleController extends ChangeNotifier {
     await _saveAndRebuild();
   }
 
-  Future<void> addSchedule(String name) async {
-    final created = Schedule(
-      id: 'schedule_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      lessons: activeSchedule.lessons,
-      activeWeekdays: activeSchedule.activeWeekdays,
-    );
-    _schedules = [..._schedules, created];
-    _activeScheduleId = created.id;
-    await _saveAndRebuild();
-  }
-
-  Future<void> activateSchedule(String id) async {
-    if (!_schedules.any((schedule) => schedule.id == id)) {
-      throw ArgumentError.value(id, 'id', 'Unknown schedule');
-    }
-    _activeScheduleId = id;
-    await _repository.saveActiveScheduleId(id);
-    await rebuildPlan();
-  }
-
   Future<void> updateSettings(AppSettings settings) async {
     _settings = settings;
     await _repository.saveSettings(settings);
     await rebuildPlan();
-  }
-
-  Future<void> exportSchedules() async {
-    final json = const JsonEncoder.withIndent('  ').convert({
-      'version': 1,
-      'schedules': _schedules.map((schedule) => schedule.toJson()).toList(),
-    });
-    await _alarmService.exportScheduleFile(json);
-  }
-
-  Future<void> importSchedules() async {
-    final contents = await _alarmService.importScheduleFile();
-    if (contents == null) return;
-    final root = jsonDecode(contents) as Map<String, Object?>;
-    final imported = (root['schedules']! as List<Object?>)
-        .map((item) => Schedule.fromJson(item! as Map<String, Object?>))
-        .toList();
-    if (imported.isEmpty) {
-      throw const FormatException('لا يحتوي الملف على جداول');
-    }
-    final suffix = DateTime.now().microsecondsSinceEpoch;
-    final cloned = imported.map((schedule) {
-      final newId = '${schedule.id}_$suffix';
-      return schedule.copyWith(
-        id: newId,
-        lessons: schedule.lessons
-            .map((lesson) => lesson.copyWith(id: '${lesson.id}_$suffix'))
-            .toList(),
-      );
-    });
-    _schedules = [..._schedules, ...cloned];
-    await _saveAndRebuild();
   }
 
   void _replaceSchedule(Schedule schedule) {

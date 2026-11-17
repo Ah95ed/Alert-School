@@ -13,35 +13,32 @@ class AlarmService {
     required List<Schedule> schedules,
     required String activeScheduleId,
     required AppSettings settings,
-  }) =>
-      _channel.invokeMethod<void>('syncPlan', {
-        'bells': bells.map((bell) => bell.toJson()).toList(),
-        'schedules': schedules.map((schedule) => schedule.toJson()).toList(),
-        'activeScheduleId': activeScheduleId,
-        'settings': settings.toJson(),
-      });
+  }) => _channel.invokeMethod<void>('syncPlan', {
+    'bells': bells.map((bell) => bell.toJson()).toList(),
+    'schedules': schedules.map((schedule) => schedule.toJson()).toList(),
+    'activeScheduleId': activeScheduleId,
+    'settings': settings.toJson(),
+  });
 
   Future<Map<String, Object?>> getReadiness() async =>
       (await _channel.invokeMapMethod<String, Object?>('getReadiness')) ?? {};
 
-  Future<void> repairPermission(String permission) =>
-      _channel.invokeMethod<void>('repairPermission', {'permission': permission});
+  Future<bool> isBellRinging() async =>
+      await _channel.invokeMethod<bool>('isBellRinging') ?? false;
 
-  Future<void> confirmAutostartConfigured() =>
-      _channel.invokeMethod<void>('confirmAutostartConfigured');
+  Future<void> stopBell() => _channel.invokeMethod<void>('stopBell');
 
-  Future<void> playTestBell() =>
-      _channel.invokeMethod<void>('playTestBell');
+  Future<void> repairPermission(String permission) => _channel
+      .invokeMethod<void>('repairPermission', {'permission': permission});
 
-  Future<void> scheduleTestBell() =>
-      _channel.invokeMethod<void>('scheduleTestBell');
+  Future<Map<String, Object?>?> chooseSystemSound() =>
+      _channel.invokeMapMethod<String, Object?>('chooseSystemSound');
 
-  Future<String?> pickSound() =>
-      _channel.invokeMethod<String>('pickSound');
-
-  Future<String?> importScheduleFile() =>
-      _channel.invokeMethod<String>('importScheduleFile');
-
-  Future<void> exportScheduleFile(String json) =>
-      _channel.invokeMethod<void>('exportScheduleFile', {'json': json});
+  Future<Map<String, Object?>?> copySoundFile({
+    required String path,
+    required String name,
+  }) => _channel.invokeMapMethod<String, Object?>('copySoundFile', {
+    'path': path,
+    'name': name,
+  });
 }

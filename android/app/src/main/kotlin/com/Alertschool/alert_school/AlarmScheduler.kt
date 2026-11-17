@@ -8,8 +8,6 @@ import android.os.Build
 import org.json.JSONObject
 
 internal object AlarmScheduler {
-    private const val TEST_ACTION = "com.Alertschool.alert_school.TEST_BELL"
-
     fun syncFromFlutter(context: Context, payload: JSONObject) {
         AlarmStore.saveFlutterPlan(context, payload)
         scheduleNext(context)
@@ -67,36 +65,6 @@ internal object AlarmScheduler {
         }
     }
 
-    fun scheduleTestBell(context: Context) {
-        val manager = context.getSystemService(AlarmManager::class.java)
-        val id = "test_${System.currentTimeMillis()}"
-        val triggerAt = System.currentTimeMillis() + 60_000
-        val operation = PendingIntent.getBroadcast(
-            context,
-            id.hashCode(),
-            Intent(context, BellReceiver::class.java)
-                .setAction(TEST_ACTION)
-                .putExtra(BellReceiver.EXTRA_BELL_ID, id),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val showApp = PendingIntent.getActivity(
-            context,
-            id.hashCode(),
-            context.packageManager.getLaunchIntentForPackage(context.packageName)
-                ?: Intent(context, MainActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        try {
-            manager.setAlarmClock(
-                AlarmManager.AlarmClockInfo(triggerAt, showApp),
-                operation
-            )
-        } catch (error: SecurityException) {
-            AlarmStore.log("Unable to schedule the one-minute test alarm.", error)
-            throw error
-        }
-    }
-
     fun scheduleMissedBell(context: Context, bell: JSONObject) {
         val id = bell.optString("id")
         val operation = PendingIntent.getBroadcast(
@@ -119,16 +87,6 @@ internal object AlarmScheduler {
             AlarmManager.AlarmClockInfo(System.currentTimeMillis() + 1_000L, showApp),
             operation
         )
-    }
-
-    fun isTest(action: String?): Boolean = action == TEST_ACTION
-
-    fun startTestBell(context: Context) {
-        val test = JSONObject()
-            .put("id", "test_${System.currentTimeMillis()}")
-            .put("type", "start")
-            .put("lessonName", "جرس تجريبي")
-        BellService.start(context, test, testMode = true)
     }
 
     private fun cancelCurrent(context: Context, manager: AlarmManager) {

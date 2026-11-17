@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -5,8 +7,6 @@ import '../../controllers/permissions_controller.dart';
 import '../../controllers/schedule_controller.dart';
 import '../../core/l10n/app_localizations.dart';
 import 'home_screen.dart';
-import 'readiness_screen.dart';
-import 'schedule_screen.dart';
 import 'settings_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -17,8 +17,8 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
-  int _selectedIndex = 0;
-  bool _checkedFirstRun = false;
+  bool _startupFlowStarted = false;
+  Completer<void>? _resumeCompleter;
 
   @override
   void initState() {
@@ -34,70 +34,79 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      context.read<PermissionsController>().refresh();
-    }
+    if (state != AppLifecycleState.resumed) return;
+    context.read<PermissionsController>().refresh();
+    final completer = _resumeCompleter;
+    if (completer != null && !completer.isCompleted) completer.complete();
+    _resumeCompleter = null;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_checkedFirstRun) return;
-    _checkedFirstRun = true;
-    final schedule = context.read<ScheduleController>();
-    final permissions = context.read<PermissionsController>();
-    _selectedIndex = schedule.isFirstRun ? 3 : 0;
-    permissions.refresh();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final titles = [
-      context.tr('home'),
-      context.tr('schedule'),
-      context.tr('settings'),
-      context.tr('readiness'),
-    ];
-    const pages = [
-      HomeScreen(),
-      ScheduleScreen(),
-      SettingsScreen(),
-      ReadinessScreen(),
-    ];
-    return Scaffold(
-      appBar: AppBar(title: Text(titles[_selectedIndex]), centerTitle: true),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: IndexedStack(index: _selectedIndex, children: pages),
-        ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) =>
-            setState(() => _selectedIndex = index),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home),
-            label: context.tr('home'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.schedule_outlined),
-            selectedIcon: const Icon(Icons.schedule),
-            label: context.tr('schedule'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.tune),
-            label: context.tr('settings'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.health_and_safety_outlined),
-            selectedIcon: const Icon(Icons.health_and_safety),
-            label: context.tr('readiness'),
-          ),
-        ],
-      ),
+    if (_startupFlowStarted) return;
+    _startupFlowStarted = true;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _requestFirstRunPermissions(),
     );
   }
+
+  Future<void> _requestFirstRunPermissions() async {
+    final schedule = context.read<ScheduleController>();
+    final permissionsController = context.read<PermissionsController>();
+    final firstRun = await schedule.claimStartupPermissionSequence();
+    if (!mounted) return;
+    await permissionsController.refresh();
+    if (!firstRun || !mounted) return;
+
+    const permissions = [
+      ('notifications', 'notificationPermission'),
+      ('exactAlarms', 'exactAlarmPermission'),
+      ('battery', 'batteryPermission'),
+    ];
+    for (final (permission, label) in permissions) {
+      final controller = permissionsController;
+      await controller.refresh();
+      if (!mounted) return;
+      if (controller.readiness[permission] == true) continue;
+      final shouldOpen = await _showPermissionDialog(label);
+      if (shouldOpen != true || !mounted) continue;
+      final resume = Completer<void>();
+      _resumeCompleter = resume;
+      await controller.repair(permission);
+      if (permission != 'notifications') {
+        await resume.future.timeout(
+          const Duration(minutes: 2),
+          onTimeout: () {},
+        );
+      }
+      if (!mounted) return;
+      await controller.refresh();
+    }
+  }
+
+  Future<bool?> _showPermissionDialog(String label) => showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      content: Text(context.tr(label)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(context.tr('later')),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(context.tr('continue')),
+        ),
+      ],
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => HomeScreen(
+    onOpenSettings: () => Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
+  );
 }

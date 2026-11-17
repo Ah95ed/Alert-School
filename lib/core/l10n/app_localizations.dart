@@ -97,6 +97,20 @@ class AppLocalizations {
     'pm': 'م',
     'readyDisclaimer':
         'حتى مع ضبط جميع الخيارات، قد تفرض بعض الشركات قيوداً إضافية على التشغيل بالخلفية. راجع تعليمات الشركة واترك التطبيق في قائمة التطبيقات الحديثة عند الحاجة.',
+    'holidayToday': 'عطلة اليوم',
+    'stopBell': 'إيقاف الجرس',
+    'tapToFix': 'اضغط لإصلاح',
+    'lesson': 'الحصة',
+    'noLessons': 'لا توجد حصص',
+    'breakShort': 'الفرصة',
+    'minutesShort': 'د',
+    'ringDuration': 'مدة الرنين',
+    'seconds': 'ث',
+    'systemAlarm': 'منبه النظام',
+    'phoneFiles': 'من ملفات الهاتف',
+    'systemTones': 'نغمات النظام',
+    'continue': 'متابعة',
+    'later': 'لاحقاً',
   };
 
   static const _english = <String, String>{
@@ -185,6 +199,20 @@ class AppLocalizations {
     'pm': 'PM',
     'readyDisclaimer':
         'Some manufacturers may still restrict background operation. Follow the device instructions and keep the app in recent apps if required.',
+    'holidayToday': 'Holiday today',
+    'stopBell': 'Stop bell',
+    'tapToFix': 'Tap to fix',
+    'lesson': 'lesson',
+    'noLessons': 'No lessons',
+    'breakShort': 'Break',
+    'minutesShort': 'min',
+    'ringDuration': 'Ring duration',
+    'seconds': 'sec',
+    'systemAlarm': 'System alarm',
+    'phoneFiles': 'From phone files',
+    'systemTones': 'System ringtones',
+    'continue': 'Continue',
+    'later': 'Later',
   };
 }
 

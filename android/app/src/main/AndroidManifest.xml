@@ -49,6 +49,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".RingActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
         <service
             android:name=".BellService"
             android:directBootAware="true"
@@ -57,6 +64,9 @@
         <receiver
             android:name=".BellReceiver"
             android:directBootAware="true"
+            android:exported="false" />
+        <receiver
+            android:name=".StopReceiver"
             android:exported="false" />
         <receiver
             android:name=".BootReceiver"
@@ -83,11 +93,6 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <package android:name="com.miui.securitycenter" />
-        <package android:name="com.huawei.systemmanager" />
-        <package android:name="com.coloros.safecenter" />
-        <package android:name="com.iqoo.secure" />
-        <package android:name="com.oneplus.security" />
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

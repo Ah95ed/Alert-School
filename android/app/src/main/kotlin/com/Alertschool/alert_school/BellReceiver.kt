@@ -7,10 +7,6 @@ import org.json.JSONObject
 
 class BellReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (AlarmScheduler.isTest(intent.action)) {
-            AlarmScheduler.startTestBell(context)
-            return
-        }
         if (intent.action == ACTION_MISSED_BELL) {
             val missed = intent.getStringExtra(EXTRA_BELL_JSON)?.let(::JSONObject) ?: return
             val missedId = missed.optString("id")
@@ -37,12 +33,7 @@ class BellReceiver : BroadcastReceiver() {
             AlarmStore.markFired(context, bell.optString("id"))
             AlarmStore.removeBell(context, bell.optString("id"))
         }
-        val types = bells.map { it.optString("type") }.toSet()
-        val type = when {
-            "reminder" in types && types.size == 1 -> "reminder"
-            "start" in types -> "start"
-            else -> "end"
-        }
+        val type = if (bells.any { it.optString("type") == "start" }) "start" else "end"
         val combined = JSONObject()
             .put("id", bells.joinToString("_") { it.optString("id") })
             .put("type", type)
@@ -50,7 +41,7 @@ class BellReceiver : BroadcastReceiver() {
                 "lessonName",
                 bells.map { it.optString("lessonName") }.distinct().joinToString("، ")
             )
-        BellService.start(context, combined, testMode = false)
+        BellService.start(context, combined)
     }
 
     companion object {

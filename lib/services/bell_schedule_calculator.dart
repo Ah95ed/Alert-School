@@ -97,17 +97,6 @@ class BellScheduleCalculator {
       for (var index = 0; index < starts.length; index++) {
         final lesson = enabledLessons[index];
         final start = starts[index];
-        if (settings.reminderMinutes > 0) {
-          _addIfFuture(
-            bells,
-            factory.create(
-              time: start.subtract(Duration(minutes: settings.reminderMinutes)),
-              type: BellType.reminder,
-              lesson: lesson,
-            ),
-            from,
-          );
-        }
         if (lesson.bellOnStart) {
           _addIfFuture(
             bells,
