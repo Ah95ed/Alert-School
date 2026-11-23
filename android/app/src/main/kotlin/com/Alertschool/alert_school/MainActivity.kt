@@ -93,6 +93,34 @@ class MainActivity : FlutterActivity() {
         when (permission) {
             "notifications" -> {
                 if (Build.VERSION.SDK_INT >= 33) {
+                    if (ContextCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        return false
+                    }
+                    val permissionPreferences =
+                        getSharedPreferences(PERMISSION_PREFS, MODE_PRIVATE)
+                    val requestedBefore = permissionPreferences.getBoolean(
+                        NOTIFICATIONS_REQUESTED,
+                        false
+                    )
+                    if (requestedBefore &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(
+                            this,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    ) {
+                        startSettings(
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                        )
+                        return false
+                    }
+                    permissionPreferences.edit()
+                        .putBoolean(NOTIFICATIONS_REQUESTED, true)
+                        .apply()
                     permissionResult = result
                     ActivityCompat.requestPermissions(
                         this,
@@ -237,5 +265,7 @@ class MainActivity : FlutterActivity() {
         private const val CHANNEL = "school_bell/alarm"
         private const val REQUEST_NOTIFICATIONS = 4204
         private const val REQUEST_SYSTEM_SOUND = 4205
+        private const val PERMISSION_PREFS = "school_bell_permission_state"
+        private const val NOTIFICATIONS_REQUESTED = "notifications_requested"
     }
 }

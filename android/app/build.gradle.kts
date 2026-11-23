@@ -38,24 +38,21 @@ android {
     //         keyPassword = releaseKeyProperties.getProperty("keyPassword")
     //     }
     // }
-     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
-
-    // buildTypes {
+    //  buildTypes {
     //     release {
-    //         // WorkManager creates its Room database implementation reflectively.
-    //         isMinifyEnabled = false
-    //         isShrinkResources = false
-    //         if (releaseKeyPropertiesFile.exists()) {
-    //             signingConfig = signingConfigs.getByName("release")
-    //         }
+    //         // TODO: Add your own signing config for the release build.
+    //         // Signing with the debug keys for now, so `flutter run --release` works.
+    //         signingConfig = signingConfigs.getByName("debug")
     //     }
     // }
+
+    buildTypes {
+        release {
+            // WorkManager creates its Room database implementation reflectively.
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+    }
 }
 
 dependencies {
